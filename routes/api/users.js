@@ -6,6 +6,10 @@ const keys = require('../../config/keys')
 const router = express.Router();
 const passport = require('passport');
 
+//load input validation
+const validateRegisterInput = require('../../validation/register');
+const validateLoginInput = require('../../validation/login');
+
 
 const User = require('../../models/User')
 // @route GET request  apit/users/test
@@ -18,6 +22,13 @@ router.get('/test', (req, res) => res.json({msg: "users works"}));
 // @desc register user
 // @ access public
 router.post('/register', (req, res) => {
+  // use destructuring to pull errors and isvalid from validataeRegisterInput function
+  // which takes req.body as a parameter. The function is in register
+  const {errors, isValid} = validateRegisterInput(req.body);
+  //check validation 
+  if(!isValid){
+    return res.status(400).json(errors)
+  }
   
     User.findOne({ email: req.body.email }).then(user => {
       if (user) {
@@ -55,6 +66,8 @@ router.post('/register', (req, res) => {
 // @ access public
 
 router.post('/login', (req, res) =>{
+
+  const {errors, isValid} = validateLoginInput(req.body);
   const email = req.body.email;
   const password = req.body.password;
 
@@ -62,7 +75,8 @@ router.post('/login', (req, res) =>{
   User.findOne({email})
       .then(user =>{
         if(!user){
-          return res.status(404).json({email: 'User not found'})
+          errors.email = 'User not found';
+          return res.status(404).json(errors)
         }
 
         // check password
@@ -81,7 +95,8 @@ router.post('/login', (req, res) =>{
                 });
                
              } else{
-               return res.status(400).json({password: 'Password incorrect'})
+               errors.password = 'Not the correct password';
+               return res.status(400).json(errors);
              }
            })
 
