@@ -3,10 +3,12 @@ const Schema = mongoose.Schema;
 
 // Create Schema
 const ProfileSchema = new Schema({
+  // user model is connected to profile here
   user: {
     type: Schema.Types.ObjectId,
     ref: 'users'
   },
+  //
   handle: {
     type: String,
     required: true,
